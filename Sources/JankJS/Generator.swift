@@ -19,7 +19,13 @@ public struct Generator
     {
         public let configuration: Configuration
 
-        public var code: String = ""
+        public var code: String
+
+        public init(code: String = "", configuration: Configuration)
+        {
+            self.code = code
+            self.configuration = configuration
+        }
 
         public func append(string: String, indentLevel: UInt = 0)
         {
@@ -30,7 +36,7 @@ public struct Generator
 
         public func append(statement: Base, indentLevel: UInt = 0)
         {
-            append(string: statement.rawJS(code: self), indentLevel: indentLevel)
+            append(string: "statement.rawJS(code: self)", indentLevel: indentLevel)
         }
 
         public func append(statements: [Base], indentLevel: UInt = 0)
