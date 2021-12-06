@@ -13,33 +13,34 @@ public struct Generator
         public var prettyPrinting = false
         public var baseIndent = "    "
         public var newlineToken = "\n"
+        public var statementDelimiter = ";"
     }    
 
-    public class Code
+    public struct Code
     {
         public let configuration: Configuration
 
         public var code: String
 
-        public init(code: String = "", configuration: Configuration)
+        public mutating func append(string: String, indentLevel: UInt = 0)
         {
-            self.code = code
-            self.configuration = configuration
-        }
-
-        public func append(string: String, indentLevel: UInt = 0)
-        {
-            if configuration.prettyPrinting { code.append(configuration.baseIndent) }
+            if configuration.prettyPrinting 
+            {
+                code.append(Array(0..<indentLevel).map({ _ = $0; return configuration.baseIndent; }).joined()) 
+            }
             code.append(string)
             if configuration.prettyPrinting { code.append(configuration.newlineToken) }
         }
 
-        public func append(statement: Base, indentLevel: UInt = 0)
+        public mutating func append(statement: Base, indentLevel: UInt = 0)
         {
-            append(string: "statement.rawJS(code: self)", indentLevel: indentLevel)
+            let code = Code(configuration: configuration, code: "")
+            append(string: statement.rawJS(code: code).code, indentLevel: indentLevel)
+
+            self.code.append(configuration.statementDelimiter)
         }
 
-        public func append(statements: [Base], indentLevel: UInt = 0)
+        public mutating func append(statements: [Base], indentLevel: UInt = 0)
         {
             statements.forEach({ append(statement: $0, indentLevel: indentLevel) })
         }
@@ -47,10 +48,21 @@ public struct Generator
 
     public let configuration: Configuration
 
-    public func generate(@Scope.Builder _ builder: () -> [Base])
+    public func generate(@Scope.Builder _ builder: () -> [Base]) -> Generator.Code
     {
         let scope = Scope(parent: nil)
 
         scope.add(builder)
+
+        return scope.rawJS(code: .init(configuration: configuration, code: ""))
+    }
+
+    public func generate( _ scopeSerializer: @escaping (Scope) -> Void) -> Generator.Code
+    {
+        let scope = Scope(parent: nil)
+
+        scopeSerializer(scope)
+
+        return scope.rawJS(code: .init(configuration: configuration, code: ""))
     }
 }

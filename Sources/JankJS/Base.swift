@@ -9,15 +9,18 @@
 
 public protocol Base
 {
-    func rawJS(code: Generator.Code)
+    func rawJS(code: Generator.Code) -> Generator.Code
 }
 
 extension RawRepresentable
 where RawValue == String, Self: Base
 {
-    public func rawJS(code: Generator.Code)
+    public func rawJS(code: Generator.Code) -> Generator.Code
     {
+        var code = code
         code.append(string: rawValue)
+
+        return code
     }
 }
 
@@ -26,6 +29,7 @@ public enum BaseType: String, Base
     case string
     case number
     case bool
+    case reference
 }
 
 public enum Keywords

@@ -8,31 +8,76 @@
 
 public protocol BridgedType: Base
 {
-    associatedtype ValueType
+    static var type: BaseType { get }
+}
 
+extension String: BridgedType
+{
+    public typealias ValueType = Self
 
+    public static var type: BaseType { .string }
+
+    public func rawJS(code: Generator.Code) -> Generator.Code 
+    {
+        var code = code
+        code.append(string: "\"\(self)\"")
+
+        return code
+     }
 }
 
 public struct Declaration<T: BridgedType>: Base
 {
-    public let type: T
-    public let name: String
-    public let value: T.ValueType?
-
-    init(name: inout String, type: T,value: T.ValueType?)
+    public struct Reference: BridgedType
     {
-        self.type = type
-        
-        let varName = NameGenerator().next()
-        self.name = NameGenerator().next()
-        self.value = value
+        var name: String
 
-        name = self.name
+        public static var type: BaseType { .reference }
+
+        public func rawJS(code: Generator.Code) -> Generator.Code 
+        {
+            var code = code
+            code.append(string: name)
+
+            return code
+        }
     }
 
-    public func rawJS(code: Generator.Code)  
+    public let name: String
+    public let value: T?
+
+    public static func new(value: T? = nil, scope: Scope) -> Reference
     {
-        code.append(string: "var \(name)")
+        let varName = scope.nameGenerator.next()
+        let declaration = Declaration(name: varName, value: value)
+
+        scope.add(declaration)
+        return Reference(name: varName)
+    }
+
+    // public static func new(value: Reference? = nil, scope: Scope) -> Reference
+    // {
+    //     let varName = scope.nameGenerator.next()
+        
+    //     let declaration = Declaration<String>(name: varName, value: value?.name)
+
+    //     scope.add(declaration)
+    //     return Reference(name: varName)
+    // }
+
+    internal init(name: String, value: T?)
+    {        
+        self.name = name
+        self.value = value
+    }
+
+
+    public func rawJS(code: Generator.Code) -> Generator.Code
+    {
+        var code = code
+        code.append(string: "var \(name) = \(value?.rawJS(code: .init(configuration: code.configuration, code: "")).code ?? "")")
+
+        return code
     }
 }
 

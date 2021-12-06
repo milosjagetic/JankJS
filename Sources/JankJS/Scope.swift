@@ -19,6 +19,8 @@ public class Scope: Base
     }
 
     public let parent: Scope?
+    internal let nameGenerator = NameGenerator()
+
     private var statements: [Base] = []
 
     internal var depth: UInt
@@ -50,11 +52,14 @@ public class Scope: Base
         statements.append(contentsOf: builder())
     }
 
-    public func rawJS(code: Generator.Code) 
+    public func rawJS(code: Generator.Code) -> Generator.Code
     { 
+        var code = code
         code.append(string: "{", indentLevel: depth)
-        code.append(statements: statements, indentLevel: depth + 1)
+        code.append(statements: statements, indentLevel: depth)
         code.append(string: "}", indentLevel: depth)
+
+        return code
     }
 }
 
