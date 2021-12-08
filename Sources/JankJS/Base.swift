@@ -12,6 +12,11 @@ public protocol Base
     func rawJS(code: Generator.Code) -> Generator.Code
 }
 
+extension Base
+{
+    public static var null: String { "null" }
+}
+
 extension RawRepresentable
 where RawValue == String, Self: Base
 {

@@ -7,7 +7,7 @@
  */
 import Foundation
 
-public class Scope: Base
+open class Scope: Base
 {
     @resultBuilder
     public struct Builder
@@ -56,10 +56,85 @@ public class Scope: Base
     { 
         var code = code
         code.append(string: "{", indentLevel: depth)
-        code.append(statements: statements, indentLevel: depth)
+        code.append(statements: statements, indentLevel: depth + 1)
         code.append(string: "}", indentLevel: depth)
 
         return code
+    }
+}
+
+open class UntypedScope: Scope 
+{
+    private override init(parent: Scope?) 
+    {
+        super.init(parent: parent)
+    }
+
+    public static func new(parent: Scope?, @Scope.Builder _ builder: () -> [Base] = { [] }) -> Scope
+    {
+        let scope = Scope(parent: parent)
+
+        scope.add(builder)
+
+        return scope 
+
+    }
+
+    public static func new(parent: Scope?, _ scopeSerializer: (Scope) -> Void) -> Scope
+    {
+        let scope = Scope(parent: parent)
+
+        scopeSerializer(scope)
+
+        return scope 
+    }
+}
+
+open class ParameterizedScope: Scope
+{
+    init(parent: Scope?, parameters: Reference ...)
+    {
+        super.init(parent: parent)
+    }
+}
+
+open class TypedScope<T: BridgedType>: Scope
+{
+    public struct ExecutedScope<T: BridgedType>: BridgedType
+    {
+        public let scope: TypedScope<T>
+
+        public static var type: BaseType { .reference }
+
+        public func rawJS(code: Generator.Code) -> Generator.Code 
+        {
+            return code.appending(string: "\(scope.rawJS(code: code).rawCode)()")
+        }
+    }
+
+    public struct Return<T: BridgedType>: Base
+    {
+        let value: T?
+
+        public func rawJS(code: Generator.Code) -> Generator.Code 
+        {
+            let valueRaw = value?.rawJS(code: .init(configuration: code.configuration, rawCode: "")).rawCode
+            return code.appending(string: "return \(valueRaw ?? Self.null)")
+        }
+    }
+
+    private override init(parent: Scope?) 
+    {
+        super.init(parent: parent)
+    }
+
+    public static func new<T: BridgedType>(parent: Scope?, _ scopeSerializer: (Scope) -> T?) -> TypedScope<T>
+    {
+        let scope = TypedScope<T>(parent: parent)
+
+        scope.add(Return(value: scopeSerializer(scope)))
+
+        return scope 
     }
 }
 

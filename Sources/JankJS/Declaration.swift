@@ -26,22 +26,23 @@ extension String: BridgedType
      }
 }
 
+public struct Reference: BridgedType
+{
+    var name: String
+
+    public static var type: BaseType { .reference }
+
+    public func rawJS(code: Generator.Code) -> Generator.Code 
+    {
+        var code = code
+        code.append(string: name)
+
+        return code
+    }
+}
+
 public struct Declaration<T: BridgedType>: Base
 {
-    public struct Reference: BridgedType
-    {
-        var name: String
-
-        public static var type: BaseType { .reference }
-
-        public func rawJS(code: Generator.Code) -> Generator.Code 
-        {
-            var code = code
-            code.append(string: name)
-
-            return code
-        }
-    }
 
     public let name: String
     public let value: T?
@@ -74,10 +75,8 @@ public struct Declaration<T: BridgedType>: Base
 
     public func rawJS(code: Generator.Code) -> Generator.Code
     {
-        var code = code
-        code.append(string: "var \(name) = \(value?.rawJS(code: .init(configuration: code.configuration, code: "")).code ?? "")")
-
-        return code
+        let valueRaw = value?.rawJS(code: .init(configuration: code.configuration.nonPrettyPrinted, rawCode: "")).rawCode ?? Self.null
+        return code.appending(string: "var \(name) = \(valueRaw)")
     }
 }
 

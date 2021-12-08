@@ -34,26 +34,51 @@ final class JankJSTests: XCTestCase
         let prettyGenerator = Generator(configuration: .init(prettyPrinting: true))
         let generator = Generator(configuration: .init(prettyPrinting: false))
 
-        prettyAssert(generator.generate({ }).code, "{}", "Basic scope failed.")
+        prettyAssert(generator.generate({ }).rawCode, "{}", "Basic scope failed.")
         
-        prettyAssert(prettyGenerator.generate({ }).code, "{\n}\n", "Basic pretty printed scope failed.")
+        prettyAssert(prettyGenerator.generate({ }).rawCode, "{\n}\n", "Basic pretty printed scope failed.")
     }
 
     func testBasicDeclaration()
     {
         let generator = Generator(configuration: .init())
+        let prettyGenerator = Generator(configuration: .init(prettyPrinting: true))
 
         prettyAssert(generator.generate(
             { 
                 Declaration(name: "aaa", value: "")
-            }).code, "{var aaa = \"\";}", "Basic declaration test failed")
+            }).rawCode, "{var aaa = \"\";}", "Basic declaration test failed")
 
         let block: (Scope) -> Void = 
         { scope in
             let a = Declaration.new(value: "", scope: scope)
             let b = Declaration.new(value: a, scope: scope)
         }
-        prettyAssert(generator.generate(block).code, "{var a = \"\";var b = a;}", "Basic declaration with generated vars failed")
+        prettyAssert(generator.generate(block).rawCode, 
+                    "{var a = \"\";var b = a;}",
+                    "Basic scope with generated vars failed")
+
+        let returnBlock: (Scope) -> Reference =        
+        { scope -> Reference in
+            let a = Declaration.new(value: "", scope: scope)
+            let b = Declaration.new(value: a, scope: scope)
+            let c = Declaration.new(value: TypedScope<String>.ExecutedScope<String>(scope: TypedScope<String>.new(parent: scope, { scope -> String in "aaa" })), scope: scope)
+            return b
+        }
+        prettyAssert(generator.generate(returnBlock).rawCode, 
+                    "{var a = \"\";var b = a;return b;}",
+                    "Basic scope with generated vars failed and return failed")
+
+        prettyAssert(prettyGenerator.generate(returnBlock).rawCode, 
+            """
+            {
+                var a = \"\";
+                var b = a;
+                return b;
+            }
+
+            """,
+            "Basic scope with generated vars failed and return failed")
     }
 }
 
