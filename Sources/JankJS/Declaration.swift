@@ -8,15 +8,10 @@
 
 public protocol BridgedType: Base
 {
-    static var type: BaseType { get }
 }
 
 extension String: BridgedType
 {
-    public typealias ValueType = Self
-
-    public static var type: BaseType { .string }
-
     public func rawJS(code: Generator.Code) -> Generator.Code 
     {
         var code = code
@@ -24,6 +19,11 @@ extension String: BridgedType
 
         return code
      }
+}
+
+extension Int: BridgedType
+{
+    public func rawJS(code: Generator.Code) -> Generator.Code  { code.appending(string: description) }
 }
 
 public struct Reference: BridgedType
@@ -43,7 +43,6 @@ public struct Reference: BridgedType
 
 public struct Declaration<T: BridgedType>: Base
 {
-
     public let name: String
     public let value: T?
 
@@ -75,7 +74,8 @@ public struct Declaration<T: BridgedType>: Base
 
     public func rawJS(code: Generator.Code) -> Generator.Code
     {
-        let valueRaw = value?.rawJS(code: .init(configuration: code.configuration.nonPrettyPrinted, rawCode: "")).rawCode ?? Self.null
+        let valueRaw = value?.rawJS(code: .init(configuration: code.configuration,
+                                                      rawCode: "")).rawCode ?? Self.null
         return code.appending(string: "var \(name) = \(valueRaw)")
     }
 }

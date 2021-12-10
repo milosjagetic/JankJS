@@ -31,21 +31,22 @@ public struct Generator
 
         public var rawCode: String
 
-        public mutating func append(string: String, indentLevel: UInt = 0)
+        public mutating func append(string: String, indentLevel: UInt = 0, suppressNewline: Bool = true)
         {
             if configuration.prettyPrinting 
             {
                 rawCode.append(Array(0..<indentLevel).map({ _ = $0; return configuration.baseIndent; }).joined()) 
             }
+
             rawCode.append(string)
-            if configuration.prettyPrinting { rawCode.append(configuration.newlineToken) }
+            if configuration.prettyPrinting && !suppressNewline { rawCode.append(configuration.newlineToken) }
         }
 
         public mutating func append(statement: Base, indentLevel: UInt = 0)
         {
-            let code = Code(configuration: configuration.nonPrettyPrinted, rawCode: "")
+            let code = Code(configuration: configuration, rawCode: "")
             append(string: statement.rawJS(code: code).rawCode.appending(configuration.statementDelimiter), 
-                    indentLevel: indentLevel)
+                    indentLevel: indentLevel, suppressNewline: false)
         }
 
         public mutating func append(statements: [Base], indentLevel: UInt = 0)
@@ -53,11 +54,11 @@ public struct Generator
             statements.forEach({ append(statement: $0, indentLevel: indentLevel) })
         }
 
-        public func appending(string: String, indentLevel: UInt = 0) -> Code
+        public func appending(string: String, indentLevel: UInt = 0, suppressNewline: Bool = true) -> Code
         {
             var code = Code(configuration: configuration, rawCode: rawCode)
 
-            code.append(string: string, indentLevel: indentLevel)
+            code.append(string: string, indentLevel: indentLevel, suppressNewline: suppressNewline)
             return code
         }
 
@@ -75,6 +76,11 @@ public struct Generator
 
             code.append(statements: statements, indentLevel: indentLevel)
             return code
+        }
+
+        public func subcode() -> Code
+        {
+            return .init(configuration: configuration, rawCode: "")
         }
     }
 
@@ -99,5 +105,13 @@ public struct Generator
         let scope = TypedScope<T>.new(parent: nil, scopeSerializer)
 
         return scope.rawJS(code: .init(configuration: configuration, rawCode: ""))
+    }
+}
+
+extension Base
+{
+    func generate(with generator: Generator) -> Generator.Code
+    {
+        return rawJS(code: .init(configuration: generator.configuration, rawCode: ""))
     }
 }

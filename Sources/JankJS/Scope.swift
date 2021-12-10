@@ -19,9 +19,11 @@ open class Scope: Base
     }
 
     public let parent: Scope?
+    public var arguments: Reference?
+
     internal let nameGenerator = NameGenerator()
 
-    private var statements: [Base] = []
+    internal var statements: [Base] = []
 
     internal var depth: UInt
     {
@@ -37,11 +39,20 @@ open class Scope: Base
         return depth
     }
 
+
+    //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
+    //  Lifecycle -
+    //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
     public init(parent: Scope?)
     {
         self.parent = parent
+        self.arguments = nil
     }
 
+
+    //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
+    //  Adding -
+    //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
     public func add(_ x: Base)
     {
         statements.append(x)
@@ -52,10 +63,20 @@ open class Scope: Base
         statements.append(contentsOf: builder())
     }
 
+    public func attachArguments()
+    {
+        guard arguments == nil else { return }
+        arguments = Reference(name: nameGenerator.next())
+    }
+
+
+    //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
+    //  Code -
+    //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
     public func rawJS(code: Generator.Code) -> Generator.Code
     { 
         var code = code
-        code.append(string: "{", indentLevel: depth)
+        code.append(string: "{", indentLevel: depth, suppressNewline: false)
         code.append(statements: statements, indentLevel: depth + 1)
         code.append(string: "}", indentLevel: depth)
 
@@ -90,29 +111,10 @@ open class UntypedScope: Scope
     }
 }
 
-open class ParameterizedScope: Scope
-{
-    init(parent: Scope?, parameters: Reference ...)
-    {
-        super.init(parent: parent)
-    }
-}
 
 open class TypedScope<T: BridgedType>: Scope
 {
-    public struct ExecutedScope<T: BridgedType>: BridgedType
-    {
-        public let scope: TypedScope<T>
-
-        public static var type: BaseType { .reference }
-
-        public func rawJS(code: Generator.Code) -> Generator.Code 
-        {
-            return code.appending(string: "\(scope.rawJS(code: code).rawCode)()")
-        }
-    }
-
-    public struct Return<T: BridgedType>: Base
+    public struct Return: Base
     {
         let value: T?
 
@@ -128,7 +130,7 @@ open class TypedScope<T: BridgedType>: Scope
         super.init(parent: parent)
     }
 
-    public static func new<T: BridgedType>(parent: Scope?, _ scopeSerializer: (Scope) -> T?) -> TypedScope<T>
+    public static func new(parent: Scope?, _ scopeSerializer: (Scope) -> T?) -> TypedScope<T>
     {
         let scope = TypedScope<T>(parent: parent)
 
@@ -159,7 +161,7 @@ internal class NameGenerator
 
         let remainder = UInt8(value % numberOfChars)
 
-        return overflow >= numberOfChars 
+        return overflow >= numberOfChars
                         ? convertToBase26(value: overflow) + [remainder] 
                         : overflow == 0 ? [remainder] : [UInt8(overflow), remainder]
     }

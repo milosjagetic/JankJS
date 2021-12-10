@@ -35,6 +35,7 @@ public enum BaseType: String, Base
     case number
     case bool
     case reference
+    case function
 }
 
 public enum Keywords
