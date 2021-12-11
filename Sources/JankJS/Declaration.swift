@@ -28,9 +28,10 @@ extension Int: BridgedType
 
 public struct Reference: BridgedType
 {
-    var name: String
+    static let this = Reference(name: "this")
+    static let null = Reference(name: "null")
 
-    public static var type: BaseType { .reference }
+    var name: String
 
     public func rawJS(code: Generator.Code) -> Generator.Code 
     {
@@ -74,8 +75,7 @@ public struct Declaration<T: BridgedType>: Base
 
     public func rawJS(code: Generator.Code) -> Generator.Code
     {
-        let valueRaw = value?.rawJS(code: .init(configuration: code.configuration,
-                                                      rawCode: "")).rawCode ?? Self.null
+        let valueRaw = (value as BridgedType? ?? Self.null).rawJS(code: code.subcode()).rawCode
         return code.appending(string: "var \(name) = \(valueRaw)")
     }
 }

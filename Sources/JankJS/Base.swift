@@ -14,7 +14,8 @@ public protocol Base
 
 extension Base
 {
-    public static var null: String { "null" }
+    public static var null: Reference { .null }
+    public static var this: Reference { .this }
 }
 
 extension RawRepresentable
@@ -29,20 +30,4 @@ where RawValue == String, Self: Base
     }
 }
 
-public enum BaseType: String, Base
-{
-    case string
-    case number
-    case bool
-    case reference
-    case function
-}
-
-public enum Keywords
-{
-    case const
-    case `var`
-    case function
-    case `return`
-}
 

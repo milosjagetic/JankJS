@@ -120,8 +120,8 @@ open class TypedScope<T: BridgedType>: Scope
 
         public func rawJS(code: Generator.Code) -> Generator.Code 
         {
-            let valueRaw = value?.rawJS(code: .init(configuration: code.configuration, rawCode: "")).rawCode
-            return code.appending(string: "return \(valueRaw ?? Self.null)")
+            let valueRaw = (value as BridgedType? ?? Self.null).rawJS(code: code.subcode()).rawCode
+            return code.appending(string: "return \(valueRaw)")
         }
     }
 
