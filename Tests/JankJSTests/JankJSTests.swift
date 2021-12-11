@@ -169,32 +169,36 @@ final class JankJSTests: XCTestCase
                     }("a")
                     """,
                     "Basic argumented executed function generation test failed")
+    }
 
-
-        // let blockExecutionTest: (Scope) -> TypedScope.ExecutedScope =
-        // { scope -> TypedScope<String>.ExecutedScope in
-        //     let a = Declaration.new(value: TypedScope.new(parent: scope, { scope -> String in "aaa" }).executed(), 
-        //                             scope: scope)
-        //     return TypedScope.new(parent: scope, { scope -> String in "bbb" }).executed()
-        // }
-
-        // prettyAssert(prettyGenerator.generate(blockExecutionTest).rawCode,
-        //             """
-        //             {
-        //                 var a = {return "aaa";}();
-        //                 return {return "bbb";}();
-        //             }
-
-        //             """,
-        //             "Block execution test failed.")
-
+    func testBridgedTypes()
+    {
+        prettyAssert("bla".generate(with: generator).rawCode, "\"bla\"", "String bridged type generation failed")
+        prettyAssert(123.generate(with: generator).rawCode, "123", "Number bridged type generation failed")
+        prettyAssert((-123).generate(with: generator).rawCode, "-123", "Number bridged type generation failed")
+        prettyAssert((-123.321).generate(with: generator).rawCode, "-123.321", "Number bridged type generation failed")
+        prettyAssert((123.321).generate(with: generator).rawCode, "123.321", "Number bridged type generation failed")
+        prettyAssert(true.generate(with: generator).rawCode, "true", "Number bridged type generation failed")
+        prettyAssert(false.generate(with: generator).rawCode, "false", "Number bridged type generation failed")
     }
 
     func testBasicOperators()
     {
         prettyAssert(("a" ++ "b" +- 1 +* 9).generate(with: generator).rawCode,
-                    "\"a\" + \"b\" - 1", 
+                    "\"a\" + \"b\" - 1 * 9", 
                     "Basic operator generation failed")
+    }
+
+    func testMemberAccess()
+    {
+        prettyAssert(Reference.this.getElementById.generate(with: generator).rawCode, 
+                    "this.getElementById", 
+                    "Base member access test failed")
+
+        prettyAssert(Reference.this.getElementById.generate(with: generator).rawCode, 
+                    "this.getElementById", 
+                    "Base member access test failed")
+        
     }
 }
 

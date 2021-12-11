@@ -6,32 +6,14 @@
  * Copyright 2021 - 2021 REGALE DIGITA
  */
 
-public protocol BridgedType: Base
-{
-}
-
-extension String: BridgedType
-{
-    public func rawJS(code: Generator.Code) -> Generator.Code 
-    {
-        var code = code
-        code.append(string: "\"\(self)\"")
-
-        return code
-     }
-}
-
-extension Int: BridgedType
-{
-    public func rawJS(code: Generator.Code) -> Generator.Code  { code.appending(string: description) }
-}
-
 public struct Reference: BridgedType
 {
     static let this = Reference(name: "this")
     static let null = Reference(name: "null")
 
     var name: String
+
+    public var codeValue: String { name }
 
     public func rawJS(code: Generator.Code) -> Generator.Code 
     {
@@ -56,22 +38,11 @@ public struct Declaration<T: BridgedType>: Base
         return Reference(name: varName)
     }
 
-    // public static func new(value: Reference? = nil, scope: Scope) -> Reference
-    // {
-    //     let varName = scope.nameGenerator.next()
-        
-    //     let declaration = Declaration<String>(name: varName, value: value?.name)
-
-    //     scope.add(declaration)
-    //     return Reference(name: varName)
-    // }
-
     internal init(name: String, value: T?)
     {        
         self.name = name
         self.value = value
     }
-
 
     public func rawJS(code: Generator.Code) -> Generator.Code
     {
