@@ -7,7 +7,7 @@
  */
 
 
-public struct Operator: Base
+public struct Operator: BridgedType
 {
     public enum Symbol: String
     {
@@ -29,23 +29,32 @@ public struct Operator: Base
                                         .joined(separator:" "))
     }
 }
-infix operator ++
-func ++<T: BridgedType>(left: T, right: T) -> Operator
+infix operator ++: JankPrecedence
+func ++<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .plus)
 }
-infix operator +-
-func +-<T: BridgedType>(left: T, right: T) -> Operator
+infix operator +-: JankPrecedence
+func +-<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .minus)
 }
-infix operator +/
-func +/<T: BridgedType>(left: T, right: T) -> Operator
+infix operator +/: JankPrecedence
+func +/<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .divide)
 }
-infix operator +*
-func +*<T: BridgedType>(left: T, right: T) -> Operator
+infix operator +*: JankPrecedence
+func +*<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .multiply)
 }
+
+
+    precedencegroup JankPrecedence
+    {
+        higherThan: AdditionPrecedence
+        lowerThan: DefaultPrecedence
+        associativity: left
+        assignment: true
+    }

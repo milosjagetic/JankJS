@@ -190,9 +190,11 @@ final class JankJSTests: XCTestCase
 
     }
 
-    func testOperators()
+    func testBasicOperators()
     {
-        prettyAssert(("a" ++ "b").generate(with: generator).rawCode, "expected: Equatable", "message: ")
+        prettyAssert(("a" ++ "b" +- 1 +* 9).generate(with: generator).rawCode,
+                    "\"a\" + \"b\" - 1", 
+                    "Basic operator generation failed")
     }
 }
 
