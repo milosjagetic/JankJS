@@ -21,6 +21,8 @@ public struct Operator: BridgedType
     let right: BridgedType
     let symbol: Symbol
 
+    public var codeValue: String { rawJS(code: .init(configuration: .init(), rawCode: "")).rawCode }
+
     public func rawJS(code: Generator.Code) -> Generator.Code 
     {
         return code.appending(string: [left.rawJS(code: code.subcode()).rawCode, 

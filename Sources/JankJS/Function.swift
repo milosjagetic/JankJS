@@ -34,6 +34,7 @@ open class BaseFunction: Base, BridgedType
                     .appending(string: scope.rawJS(code: code.subcode()).rawCode)
     }
 
+    public var codeValue: String { rawJS(code: .init(configuration: .init(), rawCode: "")).rawCode }
 }
 
 open class Function: BaseFunction
@@ -55,9 +56,9 @@ open class Function: BaseFunction
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Public -
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
-    func executed() -> ExecutedFunction  
+    func executed() -> Executed  
     {
-        ExecutedFunction(function: self, arguments: nil)
+        Executed(base: self, arguments: nil)
     }
 }
 
@@ -88,20 +89,9 @@ open class ArgumentedFunction: BaseFunction
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Public -
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
-    func executed(arguments: BridgedType) -> ExecutedFunction  
+    func executed(arguments: BridgedType) -> Executed  
     {
-        ExecutedFunction(function: self, arguments: arguments)
+        Executed(base: self, arguments: arguments)
     }
 }
 
-public struct ExecutedFunction: BridgedType
-{
-    public let function: BaseFunction
-    public let arguments: BridgedType?
-
-    public func rawJS(code: Generator.Code) -> Generator.Code 
-    {
-        return code.appending(string: function.rawJS(code: code.subcode()).rawCode)
-                .appending(string: "(\(arguments?.rawJS(code: code.subcode()).rawCode ?? ""))")
-    }
-}

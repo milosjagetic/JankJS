@@ -31,3 +31,16 @@ where RawValue == String, Self: Base
 }
 
 
+public struct Executed: BridgedType
+{
+    public let base: Base
+    public let arguments: BridgedType?
+
+    public var codeValue: String { rawJS(code: .init(configuration: .init(), rawCode: "")).rawCode }
+
+    public func rawJS(code: Generator.Code) -> Generator.Code 
+    {
+        return code.appending(string: base.rawJS(code: code.subcode()).rawCode)
+                .appending(string: "(\(arguments?.rawJS(code: code.subcode()).rawCode ?? ""))")
+    }
+}
