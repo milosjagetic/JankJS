@@ -7,6 +7,10 @@
  */
 
 
+
+//==//===============================================================\\
+//  Base -
+//==\\===============================================================//
 public protocol Base
 {
     func rawJS(code: Generator.Code) -> Generator.Code
@@ -18,29 +22,52 @@ extension Base
     public static var this: Reference { .this }
 }
 
-extension RawRepresentable
-where RawValue == String, Self: Base
-{
-    public func rawJS(code: Generator.Code) -> Generator.Code
-    {
-        var code = code
-        code.append(string: rawValue)
 
-        return code
-    }
-}
-
-
+//==//===============================================================\\
+//  Executed -
+//==\\===============================================================//
 public struct Executed: BridgedType
 {
     public let base: Base
-    public let arguments: BridgedType?
+    public let arguments: [BridgedType]
 
+
+    //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
+    //  Lifecycle -
+    //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
+    init(base: Base)
+    {
+        self.base = base
+        arguments = []
+    }
+
+    init(base: Base, argument: BridgedType)
+    {
+        self.base = base
+        arguments = [argument]
+    }
+
+    init(base: Base, arguments: BridgedType ...)
+    {
+        self.base = base
+        self.arguments = arguments
+    }
+
+    init(base: Base, arguments: [BridgedType])
+    {
+        self.base = base
+        self.arguments = arguments
+    }
+
+    //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
+    //  BridgedType protocol implementation -
+    //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
     public var codeValue: String { rawJS(code: .init(configuration: .init(), rawCode: "")).rawCode }
 
     public func rawJS(code: Generator.Code) -> Generator.Code 
     {
+        let argumentsString = arguments.map({ $0.rawJS(code: code.subcode()).rawCode }).joined(separator: ", ")
         return code.appending(string: base.rawJS(code: code.subcode()).rawCode)
-                .appending(string: "(\(arguments?.rawJS(code: code.subcode()).rawCode ?? ""))")
+                    .appending(string: "(\(argumentsString))")
     }
 }

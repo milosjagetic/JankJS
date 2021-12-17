@@ -33,7 +33,7 @@ extension BridgedType
 //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
 extension String: BridgedType
 {
-    public var codeValue: String { "\"\(self)\"" }
+    public var codeValue: String { "'\(self)'" }
     public func rawJS(code: Generator.Code) -> Generator.Code 
     {
         var code = code

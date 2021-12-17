@@ -6,24 +6,6 @@
  * Copyright 2021 - 2021 REGALE DIGITA
  */
 
-public struct Reference: BridgedType
-{
-    static let this = Reference(name: "this")
-    static let null = Reference(name: "null")
-
-    var name: String
-
-    public var codeValue: String { name }
-
-    public func rawJS(code: Generator.Code) -> Generator.Code 
-    {
-        var code = code
-        code.append(string: name)
-
-        return code
-    }
-}
-
 public struct Declaration<T: BridgedType>: Base
 {
     public let name: String

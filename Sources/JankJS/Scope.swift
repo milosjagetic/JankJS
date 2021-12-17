@@ -5,6 +5,7 @@
  * -----
  * Copyright 2021 - 2021 REGALE DIGITA
  */
+ 
 import Foundation
 
 open class Scope: Base

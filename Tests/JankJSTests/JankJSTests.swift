@@ -198,7 +198,13 @@ final class JankJSTests: XCTestCase
         prettyAssert(Reference.this.getElementById.generate(with: generator).rawCode, 
                     "this.getElementById", 
                     "Base member access test failed")
-        
+    }
+
+    func testExection()
+    {
+        prettyAssert(Reference.this.replace.execute("a", "b").generate(with: generator).rawCode,
+                    "this.replace(\"a\", \"b\")",
+                    "This.member execution failed")
     }
 }
 

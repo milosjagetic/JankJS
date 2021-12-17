@@ -10,11 +10,21 @@ public struct Generator
 {
     public struct Configuration
     {
-        public var prettyPrinting = false
-        public var baseIndent = "    "
-        public var newlineToken = "\n"
-        public var statementDelimiter = ";"
+        public var prettyPrinting: Bool
+        public var baseIndent: String
+        public var newlineToken: String
+        public var statementDelimiter : String
 
+        public init(prettyPrinting: Bool = false, 
+                    baseIndent: String = "    ", 
+                    newlineToken: String = "\n", 
+                    statementDelimiter: String = ";")
+        {
+            self.prettyPrinting = prettyPrinting
+            self.baseIndent = baseIndent
+            self.newlineToken = newlineToken
+            self.statementDelimiter = statementDelimiter
+        }
 
         var nonPrettyPrinted: Configuration
         {
@@ -86,6 +96,11 @@ public struct Generator
 
     public let configuration: Configuration
 
+    public init(configuration: Configuration)
+    {
+        self.configuration = configuration
+    }
+
     public func generate(@Scope.Builder _ builder: () -> [Base]) -> Generator.Code
     {
         let scope = UntypedScope.new(parent: nil, builder)
@@ -110,7 +125,7 @@ public struct Generator
 
 extension Base
 {
-    func generate(with generator: Generator) -> Generator.Code
+    public func generate(with generator: Generator) -> Generator.Code
     {
         return rawJS(code: .init(configuration: generator.configuration, rawCode: ""))
     }

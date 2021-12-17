@@ -56,9 +56,9 @@ open class Function: BaseFunction
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Public -
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
-    func executed() -> Executed  
+    public func executed() -> Executed  
     {
-        Executed(base: self, arguments: nil)
+        Executed(base: self)
     }
 }
 
