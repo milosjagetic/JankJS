@@ -38,6 +38,8 @@ public struct Operator: BridgedType
         case multiply = "*"
         case logicalOr = "||"
         case logicalAnd = "&&"
+        case comparison = "=="
+        case superComparison = "==="
 
         var precedence: Int
         {
@@ -45,8 +47,9 @@ public struct Operator: BridgedType
             {
             case .logicalOr: return 0
             case .logicalAnd: return 1
-            case .plus, .minus: return 2
-            case .divide, .multiply: return 3                
+            case .comparison, .superComparison: return 2
+            case .plus, .minus: return 3
+            case .divide, .multiply: return 4                
             }
         }
 
@@ -114,4 +117,16 @@ infix operator +||: LogicalDisjunctionPrecedence
 public func +||<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .logicalOr)
+} 
+
+infix operator +==: ComparisonPrecedence
+public func +==<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .comparison)
+} 
+
+infix operator +===: ComparisonPrecedence
+public func +===<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .superComparison)
 } 
