@@ -65,6 +65,30 @@ extension Bool: BridgedType
     public func rawJS(code: Generator.Code) -> Generator.Code  { code.appending(string: codeValue) }
 }
 
+public struct BridgedArray<T: Hashable & BridgedType>: BridgedType, ExpressibleByArrayLiteral
+{
+    public var value: Array<T>
+
+
+   //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
+   //  ExpressibleByArrayLiteral protocol implementation -
+   //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
+    public typealias ArrayLiteralElement = T
+
+    public init(arrayLiteral elements: T...) 
+    where T: Hashable
+    {
+       value = Array(elements)
+    }
+
+
+   //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
+   //  BridgedType protocol implementation -
+   //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
+    public var codeValue: String { (["["] + value.map { $0.codeValue } + ["]"]).joined() }
+    public func rawJS(code: Generator.Code) -> Generator.Code  { code.appending(string: codeValue) }
+}
+
 
 //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
 //  Helpers -
