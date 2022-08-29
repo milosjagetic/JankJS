@@ -88,6 +88,16 @@ public struct Generator
             return code
         }
 
+        public func appending(expresion: [Base], indentLevel: UInt = 0) -> Code
+        {
+            var code = Code(configuration: configuration, rawCode: rawCode)
+            print("pretty: \(configuration.prettyPrinting) express\(expresion.description)")
+            code.append(string: expresion   .map { $0.rawJS(code: subcode()).rawCode }
+                                            .joined(separator: configuration.prettyPrinting ? " " : ""), 
+                        indentLevel: indentLevel)
+            return code
+        }
+
         public func subcode() -> Code
         {
             return .init(configuration: configuration, rawCode: "")
