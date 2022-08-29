@@ -22,7 +22,11 @@ extension BridgedType
 {
     public subscript(dynamicMember string: String) -> Reference
     {
-        get { Reference(name: "\(codeValue).\(string)") }
+        get 
+        { 
+            (self is Operator) ? Reference(name: "\(Parenthesis.parenthesize(self).codeValue).\(string)") 
+                                : Reference(name: "\(codeValue).\(string)") 
+        }
     }
 
 }
