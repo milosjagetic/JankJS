@@ -11,7 +11,8 @@ public struct Reference: BridgedType
     public static let this = Reference(name: "this")
     public static let null = Reference(name: "null")
     public static let document = Reference(name: "document")
-
+    public static let window = Reference(name: "window")
+    
     var name: String
 
     public var codeValue: String { name }
