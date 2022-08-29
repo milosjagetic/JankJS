@@ -184,7 +184,7 @@ final class JankJSTests: XCTestCase
 
     func testBasicOperators()
     {
-        prettyAssert(("a" ++ "b" +- 1 +* 9).generate(with: generator).rawCode,
+        prettyAssert(("a" ++ "b" +- 1 +* 9).generate(with: prettyGenerator).rawCode,
                     "\"a\" + \"b\" - 1 * 9", 
                     "Basic operator generation failed")
     }
@@ -205,6 +205,38 @@ final class JankJSTests: XCTestCase
         prettyAssert(Reference.this.replace.execute("a", "b").generate(with: generator).rawCode,
                     "this.replace(\"a\", \"b\")",
                     "This.member execution failed")
+    }
+
+    func testAaa()
+    {
+        prettyAssert(Reference.document.addEventListener.execute("DOMContentLoaded", Function(untyped: 
+                        {
+                            let openModal = $0.add(ArgumentedFunction(untyped:
+                            {
+                                guard let arg = $0.arguments else { return }
+
+                                $0.add(arg.classList.add.execute("Modifiers.isActive"))
+                            }, name: "openModal", parentScope: $0))
+
+                            let closeModal = $0.add(ArgumentedFunction(untyped:
+                            {
+                                guard let arg = $0.arguments else { return }
+
+                                $0.add(arg.classList.remove.execute("Modifiers.isActive"))
+                            }, name: "closeModal", parentScope: $0))
+
+                            let closeAllModals = $0.add(ArgumentedFunction(untyped: 
+                            {
+                                _ = $0;
+                                $0.add((Reference.document.querySelectorAll.execute(".modal") +|| BridgedArray<Int>()).forEach.execute(ArgumentedFunction(untyped: 
+                                {
+                                    guard let arg = $0.arguments else { return }
+                                    $0.add(closeModal.executed(arguments: arg))
+                                }, parentScope: $0)))
+                            }, name: "closeAllModals", parentScope: $0))
+
+                        })).generate(with: prettyGenerator).rawCode
+, "", "")
     }
 }
 
