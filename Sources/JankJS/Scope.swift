@@ -54,9 +54,11 @@ open class Scope: Base
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Adding -
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
-    public func add(_ x: Base)
+    @discardableResult
+    public func add<T: Base>(_ x: T) -> T
     {
         statements.append(x)
+        return x
     }
 
     public func add(@Builder _ builder: () -> [Base])
