@@ -13,7 +13,7 @@ open class Scope: Base
     @resultBuilder
     public struct Builder
     {
-        static func buildBlock(_ components: Base...) -> [Base] 
+        public static func buildBlock(_ components: Base...) -> [Base] 
         {
             return components
         } 

@@ -20,7 +20,7 @@ public struct Declaration<T: BridgedType>: Base
         return Reference(name: varName)
     }
 
-    internal init(name: String, value: T?)
+    public init(name: String, value: T?)
     {        
         self.name = name
         self.value = value
