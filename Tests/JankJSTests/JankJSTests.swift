@@ -225,18 +225,55 @@ final class JankJSTests: XCTestCase
                                 $0.add(arg.classList.remove.execute("Modifiers.isActive"))
                             }, name: "closeModal", parentScope: $0))
 
-                            let closeAllModals = $0.add(ArgumentedFunction(untyped: 
+                            let closeAllModals = $0.add(Function(untyped: 
                             {
-                                _ = $0;
-                                $0.add((Reference.document.querySelectorAll.execute(".modal") +|| BridgedArray<Int>()).forEach.execute(ArgumentedFunction(untyped: 
-                                {
-                                    guard let arg = $0.arguments else { return }
-                                    $0.add(closeModal.executed(arguments: arg))
-                                }, parentScope: $0)))
+                                $0.add((Reference.document.querySelectorAll.execute(".modal") +|| BridgedArray<Int>())
+                                        .forEach.execute(ArgumentedFunction(untyped: 
+                                        {
+                                            guard let arg = $0.arguments else { return }
+                                            $0.add(closeModal.executed(arguments: arg))
+                                        }, parentScope: $0)))
                             }, name: "closeAllModals", parentScope: $0))
 
+                            $0.add((Reference.document.querySelectorAll.execute(".js-modal-trigger") +|| BridgedArray<Int>())
+                                        .forEach.execute(ArgumentedFunction(untyped: 
+                                        {
+                                            guard let arg = $0.arguments else { return }
+
+                                            let modal = Declaration.new(value: arg.dataset.trigger, scope: $0)
+                                            let target = Declaration.new(value: Reference.document.getElementById.execute(modal), 
+                                                                                    scope: $0)
+
+                                            $0.add(arg.addEventListener.execute("click", Function(untyped: 
+                                            {
+                                                $0.add(openModal.executed(arguments: target))
+                                            }, parentScope: $0)))
+                                        }, parentScope: $0)))
+                            
+                            let args = ".modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button"
+                            $0.add((Reference.document.querySelectorAll.execute(args) +|| BridgedArray<Int>())
+                                        .forEach.execute(ArgumentedFunction(untyped:
+                                        {
+                                            guard let arg = $0.arguments else { return }
+
+                                            let target = Declaration.new(value: arg.closest.execute(".modal"),scope: $0)
+
+                                            $0.add(arg.addEventListener.execute("click", Function(untyped: 
+                                            {
+                                                $0.add(closeModal.executed(arguments: target))
+                                            }, parentScope: $0)))
+                                        }, parentScope: $0))
+                                        )
+                            
+                            $0.add(Reference.document.addEventListener.execute("keydown", ArgumentedFunction(untyped:
+                            {
+                                guard let arg = $0.arguments else { return }
+
+                                let event = Declaration.new(value: arg +|| Reference.window.event, scope: $0)
+                                $0.if(event.keyCode +=== 27, then: UntypedScope.new(parent: $0) { closeAllModals.executed() })
+                            }, parentScope: $0)))
                         })).generate(with: prettyGenerator).rawCode
-, "", "")
+                    , "", "")
     }
 }
 
