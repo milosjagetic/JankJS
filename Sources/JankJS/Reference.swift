@@ -16,6 +16,7 @@ public struct Reference: BridgedType
 
     public var codeValue: String { name }
 
+    @discardableResult
     public func execute(_ arguments: BridgedType ...) -> Executed
     {
         return Executed(base: self, arguments: arguments)
