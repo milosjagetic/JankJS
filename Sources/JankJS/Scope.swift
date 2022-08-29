@@ -10,6 +10,23 @@ import Foundation
 
 open class Scope: Base
 {
+    public enum Prefix: Base
+    {
+        case `if`(Base)
+        case `else`
+
+        public func rawJS(code: Generator.Code) -> Generator.Code 
+        {
+            switch self
+            {
+                case .if(let condition):
+                    return code.appending(expresion:  [Reference(name: "if"),Parenthesis.open, condition, Parenthesis.closed])
+                case .else:
+                    return code.appending(statement: Reference(name: "else"))
+            }
+        }
+    }
+    
     @resultBuilder
     public struct Builder
     {
@@ -19,6 +36,7 @@ open class Scope: Base
         } 
     }
 
+    public var prefix: Prefix?
     public let parent: Scope?
     public var arguments: Reference?
 
@@ -72,6 +90,18 @@ open class Scope: Base
         arguments = Reference(name: nameGenerator.next())
     }
 
+    public func `if`<T: Scope>(_ condition: Base, then: T, other: T? = nil)
+    {
+        then.prefix = .if(condition)
+        add(then)
+
+        if let other = other
+        {
+            other.prefix = .else
+            add(other)
+        }
+    }
+
 
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Code -
@@ -79,6 +109,10 @@ open class Scope: Base
     public func rawJS(code: Generator.Code) -> Generator.Code
     { 
         var code = code
+        if let prefix = prefix
+        {
+            code.append(statement: prefix)
+        }
         code.append(string: "{", indentLevel: depth, suppressNewline: false)
         code.append(statements: statements, indentLevel: depth + 1)
         code.append(string: "}", indentLevel: depth)
