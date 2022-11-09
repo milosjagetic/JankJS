@@ -34,6 +34,41 @@ open class Scope: Base
         {
             return components
         } 
+
+        public static func buildBlock(_ components: [Base]...) -> [Base] 
+        {
+            components.flatMap { $0 }
+        }
+
+        public static func buildEither(first component: [Base]) -> [Base] 
+        {
+            component
+        }
+
+        public static func buildEither(second component: [Base]) -> [Base] 
+        {
+            component
+        }
+
+        public static func buildOptional(_ component: [Base]?) -> [Base] 
+        {
+            component ?? []
+        }
+
+        public static func buildExpression(_ expression: Base) -> [Base] 
+        {
+            [expression]
+        }
+
+        public static func buildExpression(_ expression: [Base]) -> [Base] 
+        {
+            expression
+        }
+
+        public static func buildArray(_ components: [[Base]]) -> [Base] 
+        {
+            components.flatMap { $0 }
+        }
     }
 
     public var prefix: Prefix?
