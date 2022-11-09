@@ -40,11 +40,12 @@ public struct Operator: BridgedType
         case logicalAnd = "&&"
         case comparison = "=="
         case superComparison = "==="
-
+        case assignment = "="
         var precedence: Int
         {
             switch self
             {
+            case .assignment: return -1
             case .logicalOr: return 0
             case .logicalAnd: return 1
             case .comparison, .superComparison: return 2
@@ -117,6 +118,11 @@ infix operator +||: LogicalDisjunctionPrecedence
 public func +||<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .logicalOr)
+} 
+infix operator +=+: ComparisonPrecedence
+public func +=+<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .assignment)
 } 
 
 infix operator +==: ComparisonPrecedence
