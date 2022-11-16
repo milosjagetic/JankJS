@@ -28,7 +28,6 @@ extension BridgedType
                                 : Reference(name: "\(codeValue).\(string)") 
         }
     }
-
 }
 
 

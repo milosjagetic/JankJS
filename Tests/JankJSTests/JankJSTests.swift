@@ -34,9 +34,9 @@ final class JankJSTests: XCTestCase
 
     func testBasicScope()
     {
-        prettyAssert(generator.generate({ }).rawCode, "{}", "Basic scope failed.")
+        prettyAssert(generator.generate({ [] }).rawCode, "{}", "Basic scope failed.")
         
-        prettyAssert(prettyGenerator.generate({ }).rawCode, "{\n}", "Basic pretty printed scope failed.")
+        prettyAssert(prettyGenerator.generate({ [] }).rawCode, "{\n}", "Basic pretty printed scope failed.")
     }
 
     func testBasicDeclaration()
