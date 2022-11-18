@@ -15,7 +15,7 @@ extension BridgedType
         get 
         { 
             { ( _ args: BridgedType ... ) in  
-                Executed(base: Reference(name: "\(codeValue).\(string)"), arguments: args)
+                Executed(base: Reference(name: "\(minimized).\(string)"), arguments: args)
             }
         }
     }

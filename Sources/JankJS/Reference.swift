@@ -6,7 +6,7 @@
  * Copyright 2021 - 2021 REGALE DIGITA
  */
 
-public struct Reference: BridgedType
+public class Reference: BridgedType
 {
     public static let this = Reference(name: "this")
     public static let null = Reference(name: "null")
@@ -15,11 +15,25 @@ public struct Reference: BridgedType
 
     public var name: String
 
-    public var codeValue: String { name }
+    private var previous: Reference?
 
+    // TODO: Probably should validate name to exclude "." for example
     public init(name: String)
     {
         self.name = name
+    }
+
+    /**
+        Constructs a chain of `Reference` instances from the given `names`. Returns the last element of the chain.
+    */
+    public static func chain(_ names: [String]) -> Reference?
+    {
+        names.reduce(nil)
+        {
+            let reference = Reference(name: $1)
+            reference.previous = $0
+            return reference
+        }
     }
 
     @discardableResult
@@ -30,9 +44,14 @@ public struct Reference: BridgedType
 
     public func rawJS(code: Generator.Code) -> Generator.Code 
     {
-        var code = code
-        code.append(string: name)
+        var string: String = name
+        var current: Reference? = self
+        while let previous = current?.previous
+        {
+            string = previous.name + "." + string
+            current = previous
+        }
 
-        return code
+        return code.appending(string: string)
     }
 }

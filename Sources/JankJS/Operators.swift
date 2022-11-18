@@ -6,25 +6,62 @@
  * Copyright 2021 - 2021 REGALE DIGITA
  */
 
-
-public enum Parenthesis: String, Base
+   
+public enum Parenthesis: Base
 {
-    case open = "("
-    case closed = ")"
+    static let defaultOpening: String = "("
+    static let defaultClosing: String = ")"
+    static let squareOpening: String = "["
+    static let squareClosing: String = "]"
+    static let curlyOpening: String = "{"
+    static let curlyClosing: String = "}"
+
+    case square(Base)
+    case curly(Base)
+    case `default`(Base)
+
+    private var openingToken: String
+    {
+        let token: String
+        switch self
+        {
+            case .square(_): token = Self.squareOpening
+            case .curly(_): token = Self.curlyOpening
+            case .default(_): token = Self.defaultOpening
+        }
+
+        return token
+    }
+
+    private var closingToken: String
+    {
+        let token: String
+        switch self {
+        case .square(_): token = Self.squareClosing
+        case .curly(_): token = Self.curlyClosing
+        case .default(_): token = Self.defaultClosing
+        }
+
+        return token
+    }
+
+    private var value: Base
+    {
+        let value: Base
+        switch self {
+        case .square(let wrapped): value = wrapped
+        case .curly(let wrapped): value = wrapped
+        case .default(let wrapped): value = wrapped
+        }
+
+        return value
+    }
 
     public func rawJS(code: Generator.Code) -> Generator.Code 
     {
-        return code.appending(string: rawValue)
-    }
-
-    static func parenthesize(_ base: BridgedType) -> Reference
-    {
-        Reference(name: "\(Parenthesis.open.rawValue)\(base.codeValue)\(Parenthesis.closed.rawValue)")
-    }
-
-    static func parenthesize(_ base: BridgedType) -> [Base]
-    {
-        [Parenthesis.open, base, Parenthesis.closed]
+        code.appending(string: openingToken)
+            .appending(string: value.rawJS(code: code).rawCode)
+            .appending(string: closingToken)
     }
 }
 
@@ -72,8 +109,8 @@ public struct Operator: BridgedType
 
         if let left = left as? Operator
         {
-            expr.append(contentsOf: symbol.precedence > left.symbol.precedence ? Parenthesis.parenthesize(left)
-                                                                                : [left])
+            expr.append(contentsOf: symbol.precedence > left.symbol.precedence ? [Parenthesis.default(left)]
+                                                                                : [left as Base])
         }
         else
         {
@@ -84,8 +121,8 @@ public struct Operator: BridgedType
 
         if let right = right as? Operator
         {
-            expr.append(contentsOf: symbol.precedence > right.symbol.precedence ? Parenthesis.parenthesize(right)
-                                                                                : [right])
+            expr.append(contentsOf: symbol.precedence > right.symbol.precedence ? [Parenthesis.default(right)]
+                                                                                : [right as Base])
         }
         else
         {

@@ -14,16 +14,19 @@ public struct Generator
         public var baseIndent: String
         public var newlineToken: String
         public var statementDelimiter : String
+        public var stringLiteralQuote: String
 
         public init(prettyPrinting: Bool = false, 
                     baseIndent: String = "    ", 
                     newlineToken: String = "\n", 
-                    statementDelimiter: String = ";")
+                    statementDelimiter: String = ";",
+                    stringLiteralQuote: String = "'")
         {
             self.prettyPrinting = prettyPrinting
             self.baseIndent = baseIndent
             self.newlineToken = newlineToken
             self.statementDelimiter = statementDelimiter
+            self.stringLiteralQuote = stringLiteralQuote
         }
 
         var nonPrettyPrinted: Configuration
@@ -39,7 +42,12 @@ public struct Generator
     {
         public let configuration: Configuration
 
-        public var rawCode: String
+        public var rawCode: String = ""
+
+        public static func new(_ configuration: Configuration, rawCode: String = "") -> Code
+        {
+            return Code(configuration: configuration, rawCode: rawCode)
+        }
 
         public mutating func append(string: String, indentLevel: UInt = 0, suppressNewline: Bool = true)
         {
@@ -64,11 +72,33 @@ public struct Generator
             statements.forEach({ append(statement: $0, indentLevel: indentLevel) })
         }
 
+        public mutating func append(stringLiteral: String, indentLevel: UInt = 0, suppressNewline: Bool = true)
+        {
+            if configuration.prettyPrinting 
+            {
+                rawCode.append(Array(0..<indentLevel).map({ _ = $0; return configuration.baseIndent; }).joined()) 
+            }
+
+            rawCode.append(configuration.stringLiteralQuote)
+            rawCode.append(stringLiteral)
+            rawCode.append(configuration.stringLiteralQuote)
+
+            if configuration.prettyPrinting && !suppressNewline { rawCode.append(configuration.newlineToken) }
+        }
+
         public func appending(string: String, indentLevel: UInt = 0, suppressNewline: Bool = true) -> Code
         {
             var code = Code(configuration: configuration, rawCode: rawCode)
 
             code.append(string: string, indentLevel: indentLevel, suppressNewline: suppressNewline)
+            return code
+        }
+
+        public func appending(stringLiteral: String, indentLevel: UInt = 0, suppressNewline: Bool = true) -> Code
+        {
+            var code = Code(configuration: configuration, rawCode: rawCode)
+
+            code.append(stringLiteral: stringLiteral, indentLevel: indentLevel, suppressNewline: suppressNewline)
             return code
         }
 

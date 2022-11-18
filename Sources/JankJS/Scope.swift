@@ -20,7 +20,7 @@ open class Scope: Base
             switch self
             {
                 case .if(let condition):
-                    return code.appending(expresion:  [Reference(name: "if"),Parenthesis.open, condition, Parenthesis.closed])
+                    return code.appending(expresion:  [Reference(name: "if"),Parenthesis.default(condition)])
                 case .else:
                     return code.appending(statement: Reference(name: "else"))
             }

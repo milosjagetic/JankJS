@@ -3,8 +3,8 @@ import XCTest
 
 final class JankJSTests: XCTestCase 
 {
-    let prettyGenerator = Generator(configuration: .init(prettyPrinting: true))
-    let generator = Generator(configuration: .init(prettyPrinting: false))
+    let prettyGenerator = Generator(configuration: .init(prettyPrinting: true, stringLiteralQuote: "\""))
+    let generator = Generator(configuration: .init(prettyPrinting: false, stringLiteralQuote: "\""))
 
     func testNameGenerator() 
     {
@@ -187,6 +187,10 @@ final class JankJSTests: XCTestCase
         prettyAssert(("a" ++ "b" +- 1 +* 9).generate(with: prettyGenerator).rawCode,
                     "\"a\" + \"b\" - 1 * 9", 
                     "Basic operator generation failed")
+    
+        prettyAssert(("a" +=+ "b" +- 1 +* 9).generate(with: prettyGenerator).rawCode,
+                    "\"a\" = \"b\" - 1 * 9", 
+                    "Basic operator generation failed")
     }
 
     func testMemberAccess()
@@ -207,73 +211,91 @@ final class JankJSTests: XCTestCase
                     "This.member execution failed")
     }
 
+    func testObjects()
+    {
+        prettyAssert((["a" : "b", "c" : "d"] as BridgedObject).generate(with: generator).rawCode, 
+        """
+        {"a":"b","c":"d"}
+        """, 
+        "Basic object test failed")
+
+        prettyAssert(BridgedObject(dictionaryLiteral: ("a", "b"), ("c", "d")).generate(with: prettyGenerator).rawCode, 
+        """
+        {
+            "a" : "b",
+            "c" : "d"
+        }
+        """, 
+        "Basic pretty object test failed")
+    }
+
     func testAaa()
     {
-        prettyAssert(Reference.document.addEventListener.execute("DOMContentLoaded", Function(untyped: 
-                        {
-                            let openModal = $0.add(ArgumentedFunction(untyped:
-                            {
-                                guard let arg = $0.arguments else { return }
+        // prettyAssert(Reference.document.addEventListener.execute("DOMContentLoaded", Function(untyped: 
+        //                 {
+        //                     let openModal = $0.add(ArgumentedFunction(untyped:
+        //                     {
+        //                         guard let arg = $0.arguments else { return }
 
-                                $0.add(arg.classList.add.execute("Modifiers.isActive"))
-                            }, name: "openModal", parentScope: $0))
+        //                         $0.add(arg.classList.add.execute("Modifiers.isActive"))
+        //                     }, name: "openModal", parentScope: $0))
 
-                            let closeModal = $0.add(ArgumentedFunction(untyped:
-                            {
-                                guard let arg = $0.arguments else { return }
+        //                     let closeModal = $0.add(ArgumentedFunction(untyped:
+        //                     {
+        //                         guard let arg = $0.arguments else { return }
 
-                                $0.add(arg.classList.remove.execute("Modifiers.isActive"))
-                            }, name: "closeModal", parentScope: $0))
+        //                         $0.add(arg.classList.remove.execute("Modifiers.isActive"))
+        //                     }, name: "closeModal", parentScope: $0))
 
-                            let closeAllModals = $0.add(Function(untyped: 
-                            {
-                                $0.add((Reference.document.querySelectorAll.execute(".modal") +|| BridgedArray<Int>())
-                                        .forEach.execute(ArgumentedFunction(untyped: 
-                                        {
-                                            guard let arg = $0.arguments else { return }
-                                            $0.add(closeModal.executed(arguments: arg))
-                                        }, parentScope: $0)))
-                            }, name: "closeAllModals", parentScope: $0))
+        //                     let closeAllModals = $0.add(Function(untyped: 
+        //                     {
+        //                         $0.add((Reference.document.querySelectorAll.execute(".modal") +|| BridgedArray<Int>())
+        //                                 .forEach.execute(ArgumentedFunction(untyped: 
+        //                                 {
+        //                                     guard let arg = $0.arguments else { return }
+        //                                     $0.add(closeModal.executed(arguments: arg))
+        //                                 }, parentScope: $0)))
+        //                     }, name: "closeAllModals", parentScope: $0))
 
-                            $0.add((Reference.document.querySelectorAll.execute(".js-modal-trigger") +|| BridgedArray<Int>())
-                                        .forEach.execute(ArgumentedFunction(untyped: 
-                                        {
-                                            guard let arg = $0.arguments else { return }
+        //                     $0.add((Reference.document.querySelectorAll.execute(".js-modal-trigger") +|| BridgedArray<Int>())
+        //                                 .forEach.execute(ArgumentedFunction(untyped: 
+        //                                 {
+        //                                     guard let arg = $0.arguments else { return }
 
-                                            let modal = Declaration.new(value: arg.dataset.trigger, scope: $0)
-                                            let target = Declaration.new(value: Reference.document.getElementById.execute(modal), 
-                                                                                    scope: $0)
+        //                                     let modal = Declaration.new(value: arg.dataset.trigger, scope: $0)
+        //                                     let target = Declaration.new(value: Reference.document.getElementById.execute(modal), 
+        //                                                                             scope: $0)
 
-                                            $0.add(arg.addEventListener.execute("click", Function(untyped: 
-                                            {
-                                                $0.add(openModal.executed(arguments: target))
-                                            }, parentScope: $0)))
-                                        }, parentScope: $0)))
+        //                                     $0.add(arg.addEventListener.execute("click", Function(untyped: 
+        //                                     {
+        //                                         $0.add(openModal.executed(arguments: target))
+        //                                     }, parentScope: $0)))
+        //                                 }, parentScope: $0)))
                             
-                            let args = ".modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button"
-                            $0.add((Reference.document.querySelectorAll.execute(args) +|| BridgedArray<Int>())
-                                        .forEach.execute(ArgumentedFunction(untyped:
-                                        {
-                                            guard let arg = $0.arguments else { return }
+        //                     let args = ".modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button"
+        //                     $0.add((Reference.document.querySelectorAll.execute(args) +|| BridgedArray<Int>())
+        //                                 .forEach.execute(ArgumentedFunction(untyped:
+        //                                 {
+        //                                     guard let arg = $0.arguments else { return }
 
-                                            let target = Declaration.new(value: arg.closest.execute(".modal"),scope: $0)
+        //                                     let target = Declaration.new(value: arg.closest.execute(".modal"),scope: $0)
 
-                                            $0.add(arg.addEventListener.execute("click", Function(untyped: 
-                                            {
-                                                $0.add(closeModal.executed(arguments: target))
-                                            }, parentScope: $0)))
-                                        }, parentScope: $0))
-                                        )
+        //                                     $0.add(arg.addEventListener.execute("click", Function(untyped: 
+        //                                     {
+        //                                         $0.add(closeModal.executed(arguments: target))
+        //                                     }, parentScope: $0)))
+        //                                 }, parentScope: $0))
+        //                                 )
                             
-                            $0.add(Reference.document.addEventListener.execute("keydown", ArgumentedFunction(untyped:
-                            {
-                                guard let arg = $0.arguments else { return }
+        //                     $0.add(Reference.document.addEventListener.execute("keydown", ArgumentedFunction(untyped:
+        //                     {
+        //                         guard let arg = $0.arguments else { return }
 
-                                let event = Declaration.new(value: arg +|| Reference.window.event, scope: $0)
-                                $0.if(event.keyCode +=== 27, then: UntypedScope.new(parent: $0) { closeAllModals.executed() })
-                            }, parentScope: $0)))
-                        })).generate(with: prettyGenerator).rawCode
-                    , "", "")
+        //                         let event = Declaration.new(value: arg +|| Reference.window.event, scope: $0)
+        //                         $0.if(event.keyCode +=== 27, then: UntypedScope.new(parent: $0) { closeAllModals.executed() })
+        //                     }, parentScope: $0)))
+        //                 })).generate(with: prettyGenerator).rawCode
+        //             , "", "")
     }
 }
 
