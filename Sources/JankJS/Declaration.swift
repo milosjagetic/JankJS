@@ -11,9 +11,9 @@ public struct Declaration<T: BridgedType>: Base
     public let name: String
     public let value: T?
 
-    public static func new(value: T? = nil, scope: Scope) -> Reference
+    public static func new(value: T? = nil, name: String? = nil, scope: Scope) -> Reference
     {
-        let varName = scope.nameGenerator.next()
+        let varName = name ?? scope.nameGenerator.next()
         let declaration = Declaration(name: varName, value: value)
 
         scope.add(declaration)
