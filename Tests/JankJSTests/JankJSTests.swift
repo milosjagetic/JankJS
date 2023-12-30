@@ -188,8 +188,8 @@ final class JankJSTests: XCTestCase
                     "\"a\" + \"b\" - 1 * 9", 
                     "Basic operator generation failed")
     
-        prettyAssert(("a" +=+ "b" +- 1 +* 9).generate(with: prettyGenerator).rawCode,
-                    "\"a\" = \"b\" - 1 * 9", 
+        prettyAssert(("a" +=+ "b" +- 1 +* 9 +/ 2 +% 3).generate(with: prettyGenerator).rawCode,
+                    "\"a\" = \"b\" - 1 * 9 / 2 % 3", 
                     "Basic operator generation failed")
     }
 
@@ -204,11 +204,17 @@ final class JankJSTests: XCTestCase
                     "Base member access test failed")
     }
 
-    func testExection()
+    func testExecution()
     {
         prettyAssert(Reference.this.replace.execute("a", "b").generate(with: generator).rawCode,
                     "this.replace(\"a\", \"b\")",
                     "This.member execution failed")
+        prettyAssert(Reference.this.replace("a", "b").generate(with: generator).rawCode,
+                    "this.replace(\"a\", \"b\")",
+                    "This.member execution call as function failed")
+        prettyAssert(Reference.this.replace().generate(with: generator).rawCode,
+                    "this.replace()",
+                    "This.member no arguments execution call as function failed")
     }
 
     func testObjects()

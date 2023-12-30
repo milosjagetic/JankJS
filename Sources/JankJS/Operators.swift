@@ -78,6 +78,7 @@ public struct Operator: BridgedType
         case comparison = "=="
         case superComparison = "==="
         case assignment = "="
+        case modulo = "%"
         var precedence: Int
         {
             switch self
@@ -87,7 +88,7 @@ public struct Operator: BridgedType
             case .logicalAnd: return 1
             case .comparison, .superComparison: return 2
             case .plus, .minus: return 3
-            case .divide, .multiply: return 4                
+            case .divide, .multiply, .modulo: return 4                
             }
         }
 
@@ -142,9 +143,14 @@ public func +-<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
     return Operator(left: left, right: right, symbol: .minus)
 }
 infix operator +/: MultiplicationPrecedence
-func +/<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+public func +/<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .divide)
+}
+infix operator +%: MultiplicationPrecedence
+public func +%<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .modulo)
 }
 infix operator +*: MultiplicationPrecedence
 public func +*<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
