@@ -28,7 +28,7 @@ public struct Declaration<T: BridgedType>: Base
 
     public func rawJS(code: Generator.Code) -> Generator.Code
     {
-        let valueRaw = (value as BridgedType? ?? Self.null).rawJS(code: code.subcode()).rawCode
+        let valueRaw = (value as BridgedType? ?? Reference.null).rawJS(code: code.subcode()).rawCode
         return code.appending(string: "var \(name) = \(valueRaw)")
     }
 }

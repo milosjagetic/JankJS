@@ -18,9 +18,6 @@ public protocol Base
 
 extension Base
 {
-    public static var null: Reference { .null }
-    public static var this: Reference { .this }
-
     public var prettyPrinted: String 
     {
         generate(with: .init(configuration: .init(prettyPrinting: true))).rawCode
