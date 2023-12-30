@@ -81,3 +81,25 @@ public struct Executed: BridgedType
                     .appending(string: "(\(argumentsString))")
     }
 }
+
+
+public protocol Executable
+{
+    func execute(_ arguments: [BridgedType]) -> Executed
+}
+
+public extension Executable
+{
+    @discardableResult
+    func callAsFunction(_ arguments: BridgedType ...) -> Executed
+    {
+        execute(arguments)
+    }
+    
+    @discardableResult
+    func execute(_ arguments: BridgedType ...) -> Executed
+    {
+        execute(arguments)
+    }
+}
+

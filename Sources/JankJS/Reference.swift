@@ -6,12 +6,13 @@
  * Copyright 2021 - 2021 REGALE DIGITA
  */
 
-public class Reference: BridgedType
+public class Reference: BridgedType, Executable
 {
     public static let this = Reference(name: "this")
     public static let null = Reference(name: "null")
     public static let document = Reference(name: "document")
     public static let window = Reference(name: "window")
+    public static let math = Reference(name: "Math")
 
     public var name: String
 
@@ -37,9 +38,9 @@ public class Reference: BridgedType
     }
 
     @discardableResult
-    public func execute(_ arguments: BridgedType ...) -> Executed
+    public func execute(_ arguments: [BridgedType]) -> Executed
     {
-        return Executed(base: self, arguments: arguments)
+        Executed(base: self, arguments: arguments) 
     }
 
     public func rawJS(code: Generator.Code) -> Generator.Code 

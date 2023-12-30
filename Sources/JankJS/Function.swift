@@ -37,7 +37,7 @@ open class BaseFunction: Base, BridgedType
     public var codeValue: String { rawJS(code: .init(configuration: .init(), rawCode: "")).rawCode }
 }
 
-open class Function: BaseFunction
+open class Function: BaseFunction, Executable
 {
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Lifecycle -
@@ -66,13 +66,13 @@ open class Function: BaseFunction
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Public -
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
-    public func executed() -> Executed  
+    public func execute(_ arguments: [BridgedType]) -> Executed 
     {
         Executed(base: name != nil ? Reference(name: name!) : self)
     }
 }
 
-open class ArgumentedFunction: BaseFunction
+open class ArgumentedFunction: BaseFunction, Executable
 {
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Lifecycle -
@@ -99,9 +99,9 @@ open class ArgumentedFunction: BaseFunction
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Public -
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
-    public func executed(arguments: BridgedType) -> Executed  
+    public func execute(_ arguments: [BridgedType]) -> Executed 
     {
-        Executed(base: name != nil ? Reference(name: name!) : self, arguments: arguments)
+        Executed(base: name != nil ? Reference(name: name!) : self)
     }
 }
 
