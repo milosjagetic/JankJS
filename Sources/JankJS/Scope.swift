@@ -119,6 +119,11 @@ open class Scope: Base
         statements.append(contentsOf: builder())
     }
 
+    public func add(@Builder _ builder: (Scope) -> [Base])
+    {
+        statements.append(contentsOf: builder(self))
+    }
+
     public func attachArguments()
     {
         guard arguments == nil else { return }
@@ -163,7 +168,7 @@ open class UntypedScope: Scope
         super.init(parent: parent)
     }
 
-    public static func new(parent: Scope?, @Scope.Builder _ builder: () -> [Base] = { [] }) -> Scope
+    public static func new(parent: Scope?, @Scope.Builder _ builder: (Scope) -> [Base] = { _ in [] }) -> Scope
     {
         let scope = Scope(parent: parent)
 
@@ -173,7 +178,7 @@ open class UntypedScope: Scope
 
     }
 
-    public static func new(parent: Scope?, _ scopeSerializer: (Scope) -> Void) -> Scope
+    public static func new(parent: Scope?, scopeSerializer: (Scope) -> Void) -> Scope
     {
         let scope = Scope(parent: parent)
 

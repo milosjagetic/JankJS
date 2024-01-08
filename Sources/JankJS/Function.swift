@@ -44,7 +44,7 @@ open class Function: BaseFunction, Executable
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
     public init(untyped: (Scope) -> Void, parentScope: Scope? = nil)
     {
-        super.init(scope: UntypedScope.new(parent: parentScope, untyped), name: nil)
+        super.init(scope: UntypedScope.new(parent: parentScope, scopeSerializer: untyped), name: nil)
     }
 
     public init<T: BridgedType>(typed: (Scope) -> T, parentScope: Scope? = nil)
@@ -54,7 +54,7 @@ open class Function: BaseFunction, Executable
 
     public init(untyped: (Scope) -> Void, name: String?, parentScope: Scope? = nil)
     {
-        super.init(scope: UntypedScope.new(parent: parentScope, untyped), name: name ?? parentScope?.nameGenerator.next())
+        super.init(scope: UntypedScope.new(parent: parentScope, scopeSerializer: untyped), name: name ?? parentScope?.nameGenerator.next())
     }
 
     public init<T: BridgedType>(typed: (Scope) -> T, name: String?, parentScope: Scope? = nil)
@@ -79,11 +79,17 @@ open class ArgumentedFunction: BaseFunction, Executable
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
     public init(untyped: (Scope) -> Void, name: String? = nil, parentScope: Scope? = nil)
     {
-        super.init(scope: UntypedScope.new(parent: parentScope, 
+        super.init(scope: UntypedScope.new(parent: parentScope, scopeSerializer:
         {
             $0.attachArguments()
             untyped($0)
         }), name: name)
+    }
+
+
+    public init(@Scope.Builder untyped: (Scope) -> [Base], name: String? = nil, parentScope: Scope? = nil)
+    {
+        super.init(scope: UntypedScope.new(parent: parentScope, untyped), name: name)
     }
 
     public init<T: BridgedType>(typed: (Scope) -> T, name: String? = nil, parentScope: Scope? = nil)
@@ -101,7 +107,7 @@ open class ArgumentedFunction: BaseFunction, Executable
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
     public func execute(_ arguments: [BridgedType]) -> Executed 
     {
-        Executed(base: name != nil ? Reference(name: name!) : self)
+        Executed(base: name != nil ? Reference(name: name!) : self, arguments: arguments)
     }
 }
 

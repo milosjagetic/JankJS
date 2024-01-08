@@ -6,8 +6,9 @@
  * Copyright 2021 - 2021 REGALE DIGITA
  */
 
-   
-public enum Parenthesis: Base
+
+// TODO: Probably shouldn't be `BridgedType` but has to be because of operators...
+public enum Parenthesis: Base,  BridgedType
 {
     static let defaultOpening: String = "("
     static let defaultClosing: String = ")"
@@ -79,16 +80,25 @@ public struct Operator: BridgedType
         case superComparison = "==="
         case assignment = "="
         case modulo = "%"
+        case ternaryThen = "?"
+        case ternaryElse = ":"
+        case greaterThan = ">"
+        case greaterThanOrEqual = ">="
+        case lessThan = "<"
+        case lessThanOrEqual = "<="
+
         var precedence: Int
         {
             switch self
             {
-            case .assignment: return -1
+            case .ternaryElse, .ternaryThen, .greaterThan, .greaterThanOrEqual, 
+                    .lessThan, .lessThanOrEqual, .assignment: 
+                return -1
             case .logicalOr: return 0
             case .logicalAnd: return 1
             case .comparison, .superComparison: return 2
             case .plus, .minus: return 3
-            case .divide, .multiply, .modulo: return 4                
+            case .divide, .multiply, .modulo: return 4
             }
         }
 
@@ -106,32 +116,10 @@ public struct Operator: BridgedType
 
     public func rawJS(code: Generator.Code) -> Generator.Code 
     {
-        var expr: [Base] = []
-
-        if let left = left as? Operator
-        {
-            expr.append(contentsOf: symbol.precedence > left.symbol.precedence ? [Parenthesis.default(left)]
-                                                                                : [left as Base])
-        }
-        else
-        {
-            expr.append(left)
-        }
-
-        expr.append(symbol)
-
-        if let right = right as? Operator
-        {
-            expr.append(contentsOf: symbol.precedence > right.symbol.precedence ? [Parenthesis.default(right)]
-                                                                                : [right as Base])
-        }
-        else
-        {
-            expr.append(right)
-        }
-        return code.appending(expresion: expr)
+        code.appending(expresion: [left as Base, symbol, right])
     }
 }
+
 infix operator ++: AdditionPrecedence
 public func ++<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
@@ -162,7 +150,8 @@ public func +||<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .logicalOr)
 } 
-infix operator +=+: ComparisonPrecedence
+
+infix operator +=+: AssignmentPrecedence
 public func +=+<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .assignment)
@@ -178,4 +167,40 @@ infix operator +===: ComparisonPrecedence
 public func +===<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
 {
     return Operator(left: left, right: right, symbol: .superComparison)
+} 
+
+infix operator +? : TernaryPrecedence
+public func +?<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .ternaryThen)
+} 
+
+infix operator +?! : TernaryPrecedence
+public func +?!<T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .ternaryElse)
+} 
+
+infix operator +< : ComparisonPrecedence
+public func +< <T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .lessThan)
+} 
+
+infix operator +<=: ComparisonPrecedence
+public func +<= <T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .lessThanOrEqual)
+} 
+
+infix operator +>: ComparisonPrecedence
+public func +> <T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .greaterThan)
+} 
+
+infix operator +>=: ComparisonPrecedence
+public func +>= <T: BridgedType, V: BridgedType>(left: T, right: V) -> Operator
+{
+    return Operator(left: left, right: right, symbol: .greaterThanOrEqual)
 } 

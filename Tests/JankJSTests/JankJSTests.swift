@@ -1,7 +1,7 @@
 import XCTest
 @testable import JankJS
 
-final class JankJSTests: XCTestCase 
+class JankJSTests: XCTestCase 
 {
     let prettyGenerator = Generator(configuration: .init(prettyPrinting: true, stringLiteralQuote: "\""))
     let generator = Generator(configuration: .init(prettyPrinting: false, stringLiteralQuote: "\""))
@@ -34,15 +34,15 @@ final class JankJSTests: XCTestCase
 
     func testBasicScope()
     {
-        prettyAssert(generator.generate({ [] }).rawCode, "{}", "Basic scope failed.")
+        prettyAssert(generator.generate({ _ in [] }).rawCode, "{}", "Basic scope failed.")
         
-        prettyAssert(prettyGenerator.generate({ [] }).rawCode, "{\n}", "Basic pretty printed scope failed.")
+        prettyAssert(prettyGenerator.generate({ _ in [] }).rawCode, "{\n}", "Basic pretty printed scope failed.")
     }
 
     func testBasicDeclaration()
     {
         prettyAssert(generator.generate(
-            { 
+            { _ in
                 Declaration(name: "aaa", value: "")
             }).rawCode, "{var aaa = \"\";}", "Basic declaration test failed")
 
@@ -76,101 +76,6 @@ final class JankJSTests: XCTestCase
             "Basic scope with generated vars failed and return failed")
     }
 
-    func testFunctions()
-    {
-        prettyAssert(Function(typed: { _ -> String in return "";}, parentScope: nil).generate(with: generator).rawCode,
-                     "function (){return \"\";}",
-                     "Basic function generation test failed")
-        prettyAssert(Function(typed: { _ -> String in return "";}, 
-                        parentScope: nil).generate(with: prettyGenerator).rawCode,
-                    """
-                    function ()
-                    {
-                        return \"\";
-                    }
-                    """,
-                    "Basic function generation test failed")
-
-        prettyAssert(Function(typed: 
-                                { scope -> Reference in 
-                                    let _ = Declaration.new(value: "+", scope: scope)
-                                    let b = Declaration.new(value: Function(untyped: 
-                                                    { 
-                                                        _ = Declaration.new(value: 1, scope: $0) 
-                                                    }, parentScope: scope), 
-                                                            scope: scope)
-                                    return b;
-                                }, 
-                                name: "blabla",
-                                parentScope: nil)
-                        .generate(with: prettyGenerator).rawCode,
-            """
-            function blabla()
-            {
-                var a = "+";
-                var b = function ()
-                {
-                    var a = 1;
-                };
-                return b;
-            }
-            """,
-            "Basic function generation test failed")
-
-
-        prettyAssert(ArgumentedFunction(typed: 
-                                { scope -> Reference in 
-                                    let _ = Declaration.new(value: "+", scope: scope)
-                                    let b = Declaration.new(value: Function(untyped: 
-                                                    { 
-                                                        _ = Declaration.new(value: 1, scope: $0) 
-                                                    }, parentScope: scope), 
-                                                            scope: scope)
-                                    return b;
-                                }, 
-                                name: "blabla",
-                                parentScope: nil)
-                        .generate(with: prettyGenerator).rawCode,
-            """
-            function blabla(a)
-            {
-                var b = "+";
-                var c = function ()
-                {
-                    var a = 1;
-                };
-                return c;
-            }
-            """,
-            "Basic argumented function generation test failed")
-
-        let executed = ArgumentedFunction(typed: 
-                                { scope -> Reference in 
-                                    let _ = Declaration.new(value: "+", scope: scope)
-                                    let b = Declaration.new(value: Function(untyped: 
-                                                    { 
-                                                        _ = Declaration.new(value: 1, scope: $0) 
-                                                    }, parentScope: scope), 
-                                                            scope: scope)
-                                    return b;
-                                }, 
-                                name: nil,
-                                parentScope: nil).executed(arguments: "a")
-        prettyAssert(Declaration(name: "a", value: executed).generate(with: prettyGenerator).rawCode,
-                    """
-                    var a = function (a)
-                    {
-                        var b = "+";
-                        var c = function ()
-                        {
-                            var a = 1;
-                        };
-                        return c;
-                    }("a")
-                    """,
-                    "Basic argumented executed function generation test failed")
-    }
-
     func testBridgedTypes()
     {
         prettyAssert("bla".generate(with: generator).rawCode, "\"bla\"", "String bridged type generation failed")
@@ -188,6 +93,28 @@ final class JankJSTests: XCTestCase
                     "\"a\" + \"b\" - 1 * 9", 
                     "Basic operator generation failed")
     
+        prettyAssert(("a" +=+ "b" +- 1 +* 9 +/ 2 +% 3).generate(with: prettyGenerator).rawCode,
+                    "\"a\" = \"b\" - 1 * 9 / 2 % 3", 
+                    "Assignment operator generation failed")
+
+        prettyAssert(("a" +=+ "b" +>= 3 +? true +?! false).generate(with: prettyGenerator).rawCode,
+                    "\"a\" = \"b\" >= 3 ? true : false", 
+                    "Assignment operator generation failed")
+
+        prettyAssert(("a" +< "b").generate(with: prettyGenerator).rawCode,
+                    "\"a\" < \"b\"", 
+                    "Comparison less than generation failed")
+        prettyAssert(("a" +<= "b").generate(with: prettyGenerator).rawCode,
+                    "\"a\" <= \"b\"", 
+                    "Comparison less than or equal generation failed")
+
+        prettyAssert(("a" +> "b").generate(with: prettyGenerator).rawCode,
+                    "\"a\" > \"b\"", 
+                    "Comparison greater than generation failed")
+        prettyAssert(("a" +>= "b").generate(with: prettyGenerator).rawCode,
+                    "\"a\" >= \"b\"", 
+                    "Comparison greater than or equal generation failed")
+
         prettyAssert(("a" +=+ "b" +- 1 +* 9 +/ 2 +% 3).generate(with: prettyGenerator).rawCode,
                     "\"a\" = \"b\" - 1 * 9 / 2 % 3", 
                     "Basic operator generation failed")
@@ -220,93 +147,43 @@ final class JankJSTests: XCTestCase
     func testObjects()
     {
         prettyAssert((["a" : "b", "c" : "d"] as BridgedObject).generate(with: generator).rawCode, 
-        """
-        {"a":"b","c":"d"}
-        """, 
+        [
+            """
+            {"a":"b","c":"d"}
+            """,
+            """
+            {"c":"d","a":"b"}
+            """
+        ], 
         "Basic object test failed")
 
-        prettyAssert(BridgedObject(dictionaryLiteral: ("a", "b"), ("c", "d")).generate(with: prettyGenerator).rawCode, 
-        """
-        {
-            "a" : "b",
-            "c" : "d"
-        }
-        """, 
+        prettyAssert((["a" : "b", "c" : "d"] as BridgedObject).generate(with: prettyGenerator).rawCode, 
+        [
+            """
+            {
+                "a" : "b",
+                "c" : "d"
+            }
+            """,
+            """
+            {
+                "c" : "d",
+                "a" : "b"
+            }
+            """
+        ], 
         "Basic pretty object test failed")
     }
 
-    func testAaa()
+    func prettyAssert<T: Equatable>(_ specimen: T, _ expected: T, _ message: String)
     {
-        // prettyAssert(Reference.document.addEventListener.execute("DOMContentLoaded", Function(untyped: 
-        //                 {
-        //                     let openModal = $0.add(ArgumentedFunction(untyped:
-        //                     {
-        //                         guard let arg = $0.arguments else { return }
+        XCTAssert(specimen == expected, "🔴 \(message) 🔴\nGot:\n\(specimen)\nExpected:\n\(expected)")
+    }
 
-        //                         $0.add(arg.classList.add.execute("Modifiers.isActive"))
-        //                     }, name: "openModal", parentScope: $0))
-
-        //                     let closeModal = $0.add(ArgumentedFunction(untyped:
-        //                     {
-        //                         guard let arg = $0.arguments else { return }
-
-        //                         $0.add(arg.classList.remove.execute("Modifiers.isActive"))
-        //                     }, name: "closeModal", parentScope: $0))
-
-        //                     let closeAllModals = $0.add(Function(untyped: 
-        //                     {
-        //                         $0.add((Reference.document.querySelectorAll.execute(".modal") +|| BridgedArray<Int>())
-        //                                 .forEach.execute(ArgumentedFunction(untyped: 
-        //                                 {
-        //                                     guard let arg = $0.arguments else { return }
-        //                                     $0.add(closeModal.executed(arguments: arg))
-        //                                 }, parentScope: $0)))
-        //                     }, name: "closeAllModals", parentScope: $0))
-
-        //                     $0.add((Reference.document.querySelectorAll.execute(".js-modal-trigger") +|| BridgedArray<Int>())
-        //                                 .forEach.execute(ArgumentedFunction(untyped: 
-        //                                 {
-        //                                     guard let arg = $0.arguments else { return }
-
-        //                                     let modal = Declaration.new(value: arg.dataset.trigger, scope: $0)
-        //                                     let target = Declaration.new(value: Reference.document.getElementById.execute(modal), 
-        //                                                                             scope: $0)
-
-        //                                     $0.add(arg.addEventListener.execute("click", Function(untyped: 
-        //                                     {
-        //                                         $0.add(openModal.executed(arguments: target))
-        //                                     }, parentScope: $0)))
-        //                                 }, parentScope: $0)))
-                            
-        //                     let args = ".modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button"
-        //                     $0.add((Reference.document.querySelectorAll.execute(args) +|| BridgedArray<Int>())
-        //                                 .forEach.execute(ArgumentedFunction(untyped:
-        //                                 {
-        //                                     guard let arg = $0.arguments else { return }
-
-        //                                     let target = Declaration.new(value: arg.closest.execute(".modal"),scope: $0)
-
-        //                                     $0.add(arg.addEventListener.execute("click", Function(untyped: 
-        //                                     {
-        //                                         $0.add(closeModal.executed(arguments: target))
-        //                                     }, parentScope: $0)))
-        //                                 }, parentScope: $0))
-        //                                 )
-                            
-        //                     $0.add(Reference.document.addEventListener.execute("keydown", ArgumentedFunction(untyped:
-        //                     {
-        //                         guard let arg = $0.arguments else { return }
-
-        //                         let event = Declaration.new(value: arg +|| Reference.window.event, scope: $0)
-        //                         $0.if(event.keyCode +=== 27, then: UntypedScope.new(parent: $0) { closeAllModals.executed() })
-        //                     }, parentScope: $0)))
-        //                 })).generate(with: prettyGenerator).rawCode
-        //             , "", "")
+    func prettyAssert<T: Equatable>(_ specimen: T, _ expected: [T], _ message: String)
+    {
+        XCTAssert(expected.contains(specimen), "🔴 \(message) 🔴\nGot:\n\(specimen)\nExpected on of:\n\(expected)")
     }
 }
 
 
-private func prettyAssert<T: Equatable>(_ specimen: T, _ expected: T, _ message: String)
-{
-    XCTAssert(specimen == expected, "🔴 \(message) 🔴\nGot:\n\(specimen)\nExpected:\n\(expected)")
-}

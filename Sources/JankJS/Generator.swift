@@ -141,8 +141,8 @@ public struct Generator
         self.configuration = configuration
     }
 
-    public func generate(@Scope.Builder _ builder: () -> [Base]) -> Generator.Code
-    {
+    public func generate(@Scope.Builder _ builder: (Scope) -> [Base]) -> Generator.Code
+    { 
         let scope = UntypedScope.new(parent: nil, builder)
 
         return scope.rawJS(code: .init(configuration: configuration, rawCode: ""))
@@ -150,7 +150,7 @@ public struct Generator
 
     public func generate( _ scopeSerializer: @escaping (Scope) -> Void) -> Generator.Code
     {
-        let scope = UntypedScope.new(parent: nil, scopeSerializer)
+        let scope = UntypedScope.new(parent: nil, scopeSerializer: scopeSerializer)
 
         return scope.rawJS(code: .init(configuration: configuration, rawCode: ""))
     }
