@@ -47,6 +47,11 @@ open class Function: BaseFunction, Executable
         super.init(scope: UntypedScope.new(parent: parentScope, scopeSerializer: untyped), name: nil)
     }
 
+    public init(@Scope.Builder untypedBuilder: (Scope) -> [Base], parentScope: Scope? = nil)
+    {
+        super.init(scope: UntypedScope.new(parent: parentScope, untypedBuilder), name: nil)
+    }
+
     public init<T: BridgedType>(typed: (Scope) -> T, parentScope: Scope? = nil)
     {
         super.init(scope: TypedScope.new(parent: parentScope, typed), name: nil)
@@ -77,27 +82,31 @@ open class ArgumentedFunction: BaseFunction, Executable
     //  //= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =\\
     //  Lifecycle -
     //  \\= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =//
-    public init(untyped: (Scope) -> Void, name: String? = nil, parentScope: Scope? = nil)
+    public init(untyped: (Scope, Reference) -> Void, name: String? = nil, parentScope: Scope? = nil)
     {
         super.init(scope: UntypedScope.new(parent: parentScope, scopeSerializer:
         {
-            $0.attachArguments()
-            untyped($0)
+            untyped($0, $0.attachArguments())
         }), name: name)
     }
 
 
-    public init(@Scope.Builder untyped: (Scope) -> [Base], name: String? = nil, parentScope: Scope? = nil)
+    public init(@Scope.Builder untypedBuilder: (Scope, Reference) -> [Base], name: String? = nil, parentScope: Scope? = nil)
     {
-        super.init(scope: UntypedScope.new(parent: parentScope, untyped), name: name)
+        super.init(
+            scope: UntypedScope.new(parent: parentScope) 
+                {
+                    untypedBuilder($0, $0.attachArguments())
+                }, 
+            name: name
+        )
     }
 
-    public init<T: BridgedType>(typed: (Scope) -> T, name: String? = nil, parentScope: Scope? = nil)
+    public init<T: BridgedType>(typed: (Scope, Reference) -> T, name: String? = nil, parentScope: Scope? = nil)
     {
         super.init(scope: TypedScope.new(parent: parentScope,
-        { scope -> T in
-            scope.attachArguments()
-            return typed(scope)
+        { 
+            typed($0, $0.attachArguments())
         }), name: name)
     }
 

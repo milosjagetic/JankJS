@@ -124,10 +124,15 @@ open class Scope: Base
         statements.append(contentsOf: builder(self))
     }
 
-    public func attachArguments()
+    @discardableResult
+    public func attachArguments() -> Reference
     {
-        guard arguments == nil else { return }
-        arguments = Reference(name: nameGenerator.next())
+        if let arguments { return arguments }
+
+        let arguments = Reference(name: nameGenerator.next())
+        self.arguments = arguments
+
+        return arguments
     }
 
     public func `if`<T: Scope>(_ condition: Base, then: T, other: T? = nil)
